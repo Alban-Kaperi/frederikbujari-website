@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/*
+ * Saint Matthew Merchant brand theme ("Heritage", ivory & bronze).
+ * The website and the admin area share these tokens; the UI primitives in
+ * components/ui read the semantic ones (background, primary, border, ...).
+ */
+@theme {
+    --font-sans:
+        'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-body: var(--font-sans);
+    --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+
+    --color-ivory: #f5f1e8;
+    --color-paper: #fbf8f1;
+    --color-sand: #eae3d2;
+    --color-hairline: #d9d0bc;
+    --color-ink: #17130f;
+    --color-ink-soft: #231e18;
+    --color-ink-line: #4a4136;
+    --color-stone: #423b33;
+    --color-muted-stone: #6f6558;
+    --color-bronze: #d2b27a;
+    --color-bronze-deep: #84632f;
+    --color-danger: #9f2d20;
+
+    --radius-lg: var(--radius);
+    --radius-md: var(--radius);
+    --radius-sm: var(--radius);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+:root {
+    --background: #f5f1e8;
+    --foreground: #17130f;
+    --card: #fbf8f1;
+    --card-foreground: #17130f;
+    --popover: #fbf8f1;
+    --popover-foreground: #17130f;
+    --primary: #17130f;
+    --primary-foreground: #f5f1e8;
+    --secondary: #eae3d2;
+    --secondary-foreground: #17130f;
+    --muted: #eae3d2;
+    --muted-foreground: #6f6558;
+    --accent: #eae3d2;
+    --accent-foreground: #17130f;
+    --destructive: #9f2d20;
+    --destructive-foreground: #9f2d20;
+    --border: #d9d0bc;
+    --input: #d9d0bc;
+    --ring: #d2b27a;
+    --radius: 0;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
