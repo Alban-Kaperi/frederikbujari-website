@@ -20,7 +20,9 @@ class SetLocale
     {
         $route = $request->route();
 
-        App::setLocale($route->parameter('locale') ?? LocalizedPage::defaultLocale());
+        $locale = $route->parameter('locale');
+
+        App::setLocale(is_string($locale) ? $locale : LocalizedPage::defaultLocale());
 
         $route->forgetParameter('locale');
 

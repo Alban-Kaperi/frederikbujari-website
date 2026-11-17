@@ -122,3 +122,55 @@ test('deleting a post also deletes its thumbnail', function () {
     $this->assertModelMissing($post);
     Storage::disk('public')->assertMissing('posts/cover.jpg');
 });
+
+test('the admin can add translations, and empty or unsupported ones are dropped', function () {
+    $this->actingAs(User::factory()->create())
+        ->post(route('admin.posts.store'), [
+            'title' => 'Titulli',
+            'body' => 'Teksti',
+            'translations' => [
+                'en' => ['title' => 'The title', 'body' => 'The *text*'],
+                'it' => ['title' => '', 'body' => ''],
+                'de' => ['title' => 'Titel', 'body' => 'Text'],
+            ],
+            'thumbnail' => UploadedFile::fake()->image('cover.jpg', 1200, 800),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Post::sole()->translations)->toBe([
+        'en' => ['title' => 'The title', 'body' => 'The *text*'],
+    ]);
+});
+
+test('a translation needs both a title and a description', function () {
+    $this->actingAs(User::factory()->create())
+        ->post(route('admin.posts.store'), [
+            'title' => 'Titulli',
+            'body' => 'Teksti',
+            'translations' => ['en' => ['title' => 'Only a title', 'body' => '']],
+            'thumbnail' => UploadedFile::fake()->image('cover.jpg'),
+        ])
+        ->assertSessionHasErrors('translations.en.body');
+
+    expect(Post::count())->toBe(0);
+});
+
+test('uploaded thumbnails are stored as webp no wider than 1200px', function (string $filename, int $width) {
+    $this->actingAs(User::factory()->create())
+        ->post(route('admin.posts.store'), [
+            'title' => 'Titulli',
+            'body' => 'Teksti',
+            'thumbnail' => UploadedFile::fake()->image($filename, $width, 600),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $path = Post::sole()->thumbnail_path;
+    [$storedWidth, , $type] = getimagesizefromstring(Storage::disk('public')->get($path));
+
+    expect($path)->toEndWith('.webp')
+        ->and($type)->toBe(IMAGETYPE_WEBP)
+        ->and($storedWidth)->toBe(min($width, 1200));
+})->with([
+    'wide jpg is scaled down' => ['cover.jpg', 3000],
+    'small png keeps its size' => ['cover.png', 800],
+]);

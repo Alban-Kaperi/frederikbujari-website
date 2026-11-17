@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 type Props = {
     id: string;
     name: string;
-    defaultValue?: string;
+    value: string;
+    onChange: (value: string) => void;
     invalid?: boolean;
 };
 
@@ -21,11 +22,11 @@ type Mode = 'write' | 'preview';
 export default function PostBodyEditor({
     id,
     name,
-    defaultValue = '',
+    value,
+    onChange,
     invalid = false,
 }: Props) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [value, setValue] = useState(defaultValue);
     const [mode, setMode] = useState<Mode>('write');
 
     const wrapSelection = (marker: string) => {
@@ -52,7 +53,7 @@ export default function PostBodyEditor({
               value.slice(end);
         const offset = isWrapped ? -marker.length : marker.length;
 
-        setValue(nextValue);
+        onChange(nextValue);
 
         requestAnimationFrame(() => {
             textarea.focus();
@@ -128,10 +129,9 @@ export default function PostBodyEditor({
                 id={id}
                 name={name}
                 value={value}
-                onChange={(event) => setValue(event.target.value)}
+                onChange={(event) => onChange(event.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={16}
-                required
                 aria-invalid={invalid || undefined}
                 hidden={mode === 'preview'}
                 className="block w-full resize-y bg-transparent px-4 py-3 text-base leading-relaxed outline-none md:text-sm"

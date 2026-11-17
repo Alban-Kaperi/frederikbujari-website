@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StorePostRequest;
 use App\Http\Requests\Admin\UpdatePostRequest;
 use App\Models\Post;
 use App\Support\LocalizedPage;
+use App\Support\ThumbnailImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -38,7 +39,9 @@ class PostController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('admin/posts/create');
+        return Inertia::render('admin/posts/create', [
+            'languages' => LocalizedPage::languageNames(),
+        ]);
     }
 
     /**
@@ -47,8 +50,8 @@ class PostController extends Controller
     public function store(StorePostRequest $request): RedirectResponse
     {
         Post::create([
-            ...$request->safe()->only('title', 'body'),
-            'thumbnail_path' => $request->file('thumbnail')->store('posts', 'public'),
+            ...$request->postContent(),
+            'thumbnail_path' => ThumbnailImage::store($request->file('thumbnail')),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post published.')]);
@@ -62,10 +65,12 @@ class PostController extends Controller
     public function edit(Post $post): Response
     {
         return Inertia::render('admin/posts/edit', [
+            'languages' => LocalizedPage::languageNames(),
             'post' => [
                 'id' => $post->id,
                 'title' => $post->title,
                 'body' => $post->body,
+                'translations' => $post->translations ?? (object) [],
                 'thumbnailUrl' => $post->thumbnail_url,
                 'publicUrl' => LocalizedPage::url('posts.show', LocalizedPage::defaultLocale(), ['post' => $post->slug]),
             ],
@@ -77,11 +82,11 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        $post->fill($request->safe()->only('title', 'body'));
+        $post->fill($request->postContent());
 
         if ($request->hasFile('thumbnail')) {
             $previousThumbnail = $post->thumbnail_path;
-            $post->thumbnail_path = $request->file('thumbnail')->store('posts', 'public');
+            $post->thumbnail_path = ThumbnailImage::store($request->file('thumbnail'));
         }
 
         $post->save();

@@ -65,3 +65,26 @@ test('posts with the same title get different slugs', function () {
     expect($first->slug)->toBe('lajme')
         ->and($second->slug)->toBe('lajme-2');
 });
+
+test('a post is shown in the visitor language when translated, and in albanian otherwise', function () {
+    $post = Post::factory()->create([
+        'title' => 'Titulli shqip',
+        'body' => 'Teksti shqip',
+        'translations' => ['en' => ['title' => 'English title', 'body' => 'English **text**']],
+    ]);
+
+    $this->get(route('localized.posts.show', ['locale' => 'en', 'post' => $post]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('post.title', 'English title')
+            ->where('post.bodyHtml', '<p>English <strong>text</strong></p>')
+        );
+
+    $this->get(route('localized.posts.show', ['locale' => 'it', 'post' => $post]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('post.title', 'Titulli shqip')
+            ->where('post.bodyHtml', '<p>Teksti shqip</p>')
+        );
+
+    $this->get(route('localized.posts.index', ['locale' => 'en']))
+        ->assertInertia(fn (Assert $page) => $page->where('posts.data.0.title', 'English title'));
+});

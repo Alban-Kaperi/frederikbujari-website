@@ -21,10 +21,10 @@ class PostController extends Controller
             ->paginate(9)
             ->through(fn (Post $post): array => [
                 'id' => $post->id,
-                'title' => $post->title,
-                'excerpt' => $post->excerpt,
+                'title' => $post->titleFor($locale),
+                'excerpt' => $post->excerptFor($locale),
                 'thumbnailUrl' => $post->thumbnail_url,
-                'date' => $post->created_at->locale($locale)->isoFormat('LL'),
+                'date' => $this->localizedDate($post, $locale),
                 'dateTime' => $post->created_at->toAtomString(),
                 'url' => LocalizedPage::url('posts.show', $locale, ['post' => $post->slug]),
             ]);
@@ -46,21 +46,21 @@ class PostController extends Controller
 
         return LocalizedPage::render('posts/show', 'posts.show', ['post' => $post->slug], [
             'post' => [
-                'title' => $post->title,
-                'bodyHtml' => $post->body_html,
+                'title' => $post->titleFor($locale),
+                'bodyHtml' => $post->bodyHtmlFor($locale),
                 'thumbnailUrl' => $post->thumbnail_url,
-                'date' => $post->created_at->locale($locale)->isoFormat('LL'),
+                'date' => $this->localizedDate($post, $locale),
                 'dateTime' => $post->created_at->toAtomString(),
             ],
         ], [
             'title' => $post->title.' — Saint Matthew Merchant LLC',
-            'description' => $post->excerpt,
+            'description' => $post->excerptFor($locale),
             'image' => $post->thumbnail_url,
             'type' => 'article',
             'schema' => [
                 '@type' => 'BlogPosting',
-                'headline' => $post->title,
-                'description' => $post->excerpt,
+                'headline' => $post->titleFor($locale),
+                'description' => $post->excerptFor($locale),
                 'image' => $post->thumbnail_url,
                 'datePublished' => $post->created_at->toAtomString(),
                 'dateModified' => $post->updated_at->toAtomString(),
@@ -72,5 +72,16 @@ class PostController extends Controller
                 ],
             ],
         ]);
+    }
+
+    /**
+     * The publication date written out in the visitor's language.
+     */
+    private function localizedDate(Post $post, string $locale): string
+    {
+        $createdAt = $post->created_at->copy();
+        $createdAt->locale($locale);
+
+        return $createdAt->isoFormat('LL');
     }
 }

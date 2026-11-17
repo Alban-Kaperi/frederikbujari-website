@@ -21,6 +21,18 @@ class LocalizedPage
     /**
      * Get the language served without a URL prefix.
      */
+    /**
+     * The language names keyed by locale code, each written in its own language.
+     *
+     * @return array<string, string>
+     */
+    public static function languageNames(): array
+    {
+        return collect(self::locales())
+            ->mapWithKeys(fn (string $code): array => [$code => trans('site.language_name', locale: $code)])
+            ->all();
+    }
+
     public static function defaultLocale(): string
     {
         return self::locales()[0];
@@ -70,9 +82,7 @@ class LocalizedPage
             'site' => [
                 'locale' => $locale,
                 'alternates' => $alternates,
-                'languageNames' => collect(self::locales())
-                    ->mapWithKeys(fn (string $code): array => [$code => trans('site.language_name', locale: $code)])
-                    ->all(),
+                'languageNames' => self::languageNames(),
                 'homeUrl' => self::url('home', $locale),
                 'postsUrl' => self::url('posts.index', $locale),
                 'content' => trans('site'),

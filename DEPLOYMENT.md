@@ -6,12 +6,12 @@ then to update it later.
 
 Replace these placeholders everywhere below:
 
-| Placeholder | Meaning |
-| --- | --- |
-| `your-domain.com` | The website's domain (without `www.`) |
-| `SERVER_IP` | The VPS's public IP address |
-| `deploy` | The Linux user that owns the site (created in step 2) |
-| `/var/www/saintmatthew` | Where the site lives on the server |
+| Placeholder             | Meaning                                               |
+| ----------------------- | ----------------------------------------------------- |
+| `your-domain.com`       | The website's domain (without `www.`)                 |
+| `SERVER_IP`             | The VPS's public IP address                           |
+| `deploy`                | The Linux user that owns the site (created in step 2) |
+| `/var/www/saintmatthew` | Where the site lives on the server                    |
 
 > Commands starting with `sudo` need an administrator account. Everything else runs as
 > the `deploy` user, inside `/var/www/saintmatthew` unless stated otherwise.
@@ -20,14 +20,14 @@ Replace these placeholders everywhere below:
 
 ## What runs on the server
 
-| Piece | Why it is needed |
-| --- | --- |
-| Nginx | Serves the website over HTTPS |
-| PHP 8.5-FPM | Runs Laravel |
-| SQLite | Stores posts, contact requests, the admin login and sessions (one file: `database/database.sqlite`) |
-| Node.js 24 | Builds the CSS/JS, and runs the server-side renderer so search engines get fully rendered pages |
-| Supervisor | Keeps the server-side renderer running and restarts it after crashes or reboots |
-| Certbot | Free HTTPS certificate from Let's Encrypt |
+| Piece       | Why it is needed                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| Nginx       | Serves the website over HTTPS                                                                       |
+| PHP 8.5-FPM | Runs Laravel                                                                                        |
+| SQLite      | Stores posts, contact requests, the admin login and sessions (one file: `database/database.sqlite`) |
+| Node.js 24  | Builds the CSS/JS, and runs the server-side renderer so search engines get fully rendered pages     |
+| Supervisor  | Keeps the server-side renderer running and restarts it after crashes or reboots                     |
+| Certbot     | Free HTTPS certificate from Let's Encrypt                                                           |
 
 No queue worker or cron job is needed: contact emails are sent immediately, and the site
 has no scheduled tasks.
@@ -39,10 +39,10 @@ has no scheduled tasks.
 At your domain registrar, create two DNS records and wait until they resolve
 (usually a few minutes, up to a few hours):
 
-| Type | Name | Value |
-| --- | --- | --- |
-| A | `@` | `SERVER_IP` |
-| A | `www` | `SERVER_IP` |
+| Type | Name  | Value       |
+| ---- | ----- | ----------- |
+| A    | `@`   | `SERVER_IP` |
+| A    | `www` | `SERVER_IP` |
 
 ---
 
@@ -432,11 +432,11 @@ php artisan optimize
 Everything that cannot be rebuilt from the code lives in two places. Back them up regularly
 (for example nightly, to another server or cloud storage):
 
-| What | Where |
-| --- | --- |
+| What                                    | Where                                            |
+| --------------------------------------- | ------------------------------------------------ |
 | Database (posts, requests, admin login) | `/var/www/saintmatthew/database/database.sqlite` |
-| Uploaded post thumbnails | `/var/www/saintmatthew/storage/app/public/` |
-| Settings | `/var/www/saintmatthew/.env` |
+| Uploaded post thumbnails                | `/var/www/saintmatthew/storage/app/public/`      |
+| Settings                                | `/var/www/saintmatthew/.env`                     |
 
 Safe way to copy the database while the site is running:
 
@@ -448,13 +448,13 @@ sqlite3 database/database.sqlite ".backup 'database/backup-$(date +%F).sqlite'"
 
 ## Troubleshooting
 
-| Problem | What to check |
-| --- | --- |
-| Blank page or "500 Server Error" | `tail -n 50 storage/logs/laravel.log` |
-| Changes to `.env` have no effect | Run `php artisan optimize` (settings are cached) |
-| "Vite manifest not found" | Run `npm run build:ssr` |
-| Post thumbnails do not show | Run `php artisan storage:link`; check permissions in step 6 |
+| Problem                               | What to check                                                                                  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Blank page or "500 Server Error"      | `tail -n 50 storage/logs/laravel.log`                                                          |
+| Changes to `.env` have no effect      | Run `php artisan optimize` (settings are cached)                                               |
+| "Vite manifest not found"             | Run `npm run build:ssr`                                                                        |
+| Post thumbnails do not show           | Run `php artisan storage:link`; check permissions in step 6                                    |
 | Thumbnail upload fails for big images | PHP `upload_max_filesize` / `post_max_size` (step 2) and Nginx `client_max_body_size` (step 8) |
-| Contact emails do not arrive | Check the `MAIL_*` values; requests are still under **Requests** in the admin |
-| "Permission denied" errors | Repeat the `chown` / `chmod` commands in step 6 |
-| Renderer not running | `sudo supervisorctl status saintmatthew-ssr` and `storage/logs/ssr.log` |
+| Contact emails do not arrive          | Check the `MAIL_*` values; requests are still under **Requests** in the admin                  |
+| "Permission denied" errors            | Repeat the `chown` / `chmod` commands in step 6                                                |
+| Renderer not running                  | `sudo supervisorctl status saintmatthew-ssr` and `storage/logs/ssr.log`                        |

@@ -17,18 +17,25 @@ use Illuminate\Support\Str;
  * @property string $title
  * @property string $slug
  * @property string $body
+ * @property array<string, array{title: string, body: string}>|null $translations
  * @property string $thumbnail_path
  * @property-read string $thumbnail_url
- * @property-read string $body_html
- * @property-read string $excerpt
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
-#[Fillable(['title', 'body', 'thumbnail_path'])]
+#[Fillable(['title', 'body', 'translations', 'thumbnail_path'])]
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
     use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['translations' => 'array'];
+    }
 
     /**
      * Give each new post a unique slug based on its title. The slug never changes afterwards,
@@ -70,18 +77,32 @@ class Post extends Model
     }
 
     /**
-     * @return Attribute<string, never>
+     * The title and text in a language. The default language is stored on the post itself;
+     * a language without a translation falls back to it.
+     *
+     * @return array{title: string, body: string}
      */
-    protected function bodyHtml(): Attribute
+    public function contentFor(string $locale): array
     {
-        return Attribute::get(fn (): string => PostBody::toHtml($this->body));
+        if ($locale !== config('site.locales')[0] && isset($this->translations[$locale])) {
+            return $this->translations[$locale];
+        }
+
+        return ['title' => $this->title, 'body' => $this->body];
     }
 
-    /**
-     * @return Attribute<string, never>
-     */
-    protected function excerpt(): Attribute
+    public function titleFor(string $locale): string
     {
-        return Attribute::get(fn (): string => PostBody::excerpt($this->body));
+        return $this->contentFor($locale)['title'];
+    }
+
+    public function bodyHtmlFor(string $locale): string
+    {
+        return PostBody::toHtml($this->contentFor($locale)['body']);
+    }
+
+    public function excerptFor(string $locale): string
+    {
+        return PostBody::excerpt($this->contentFor($locale)['body']);
     }
 }
